@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Engine/GameObject.h"
 
 class Ground;
@@ -7,26 +7,26 @@ class Player :
     public GameObject
 {
 public:
-	//ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	//ˆø”Fparent  eƒIƒuƒWƒFƒNƒgiSceneManagerj
+	//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	//å¼•æ•°ï¼šparent  è¦ªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼ˆSceneManagerï¼‰
 	Player(GameObject* parent);
-	//‰Šú‰»
+	//åˆæœŸåŒ–
 	void Initialize() override;
-	//XV
+	//æ›´æ–°
 	void Update() override;
-	//•`‰æ
+	//æç”»
 	void Draw() override;
-	//ŠJ•ú
+	//é–‹æ”¾
 	void Release() override;
-	//’n–Ê‚Ìƒ|ƒCƒ“ƒ^‚ğæ“¾
+	//åœ°é¢ã®ãƒã‚¤ãƒ³ã‚¿ã‚’å–å¾—
 	void SetGround(Ground* g) { ground = g; }
 	void OnCollision(GameObject* pTarget) override;
 private:
-	//•à‚«ƒAƒjƒ[ƒVƒ‡ƒ“ƒ‚ƒfƒ‹
+	//æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¢ãƒ‡ãƒ«
 	int hWalkModel;
-	//‘Ò‹@ƒAƒjƒ[ƒVƒ‡ƒ“ƒ‚ƒfƒ‹
+	//å¾…æ©Ÿã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¢ãƒ‡ãƒ«
 	int hIdleModel;
-	//’n–Ê‚Ìƒ|ƒCƒ“ƒ^
+	//åœ°é¢ã®ãƒã‚¤ãƒ³ã‚¿
 	Ground* ground;
 
 	float velocityY;
@@ -41,5 +41,7 @@ private:
 
 	void MoveOrTurn(float deg);
 	void StartJump();
+	void StartTurn(float targetDeg);
+	void Move(float dirX);
 };
 

@@ -1,4 +1,4 @@
-#include "Player.h"
+Ôªø#include "Player.h"
 #include "Engine/Model.h"
 #include "Engine/Debug.h"
 #include "TestScene.h"
@@ -20,15 +20,16 @@ namespace
 
 	PlayerState pState = PLAYER_IDLE;
 
-	//ÉâÅ[ÉvÇÃñ⁄ïWíl
+	//„É©„Éº„Éó„ÅÆÁõÆÊ®ôÂÄ§
 	float targetAngle = 0.0f;
-	//ÉâÅ[ÉvÇÃèâä˙íl
+	//„É©„Éº„Éó„ÅÆÂàùÊúüÂÄ§
 	float initAngle = 0.0f;
 	float turnFrame = 0.0f;
-	//45ìxâÒì]Ç∑ÇÈÇÃÇ…Ç©Ç©ÇÈÉtÉåÅ[ÉÄ
+	//45Â∫¶ÂõûËª¢„Åô„Çã„ÅÆ„Å´„Åã„Åã„Çã„Éï„É¨„Éº„É†
 	const float TURN_FRAME = 5.0f;
 
 	const float RADIUS = 0.75f;
+	const float SPEED = 0.05f;
 
 	const float CAM_MIN_CLANP = 7 * 2.0f;
 	const float CAM_MAX_CLANP = 58 * 2.0f;
@@ -75,83 +76,6 @@ void Player::Update()
 		break;
 	}
 
-	if (pState == PLAYER_JUMP)
-	{
-		transform_.position_.y += velocityY;
-		velocityY -= 0.005f;
-		if (transform_.position_.y < 2.0f)
-		{
-			transform_.position_.y = 2.0f;
-			pState = PLAYER_WALK;
-			return;
-		}
-		return;
-	}
-
-	if (pState == PLAYER_TURN)
-	{
-		static int frame = 0;
-		frame++;
-		float t = frame / turnFrame;
-		float angle = targetAngle - initAngle;
-		if (angle > 180)angle = angle - 360;
-		else if (angle < -180)angle = angle + 360;
-		transform_.rotate_.y = initAngle + angle * t;
-		if (frame >= turnFrame)
-		{
-			pState = PLAYER_WALK;
-			transform_.rotate_.y = targetAngle;
-			frame = 0;
-		}
-		return;
-	}
-
-	XMVECTOR pos = XMLoadFloat3(&transform_.position_);
-	XMFLOAT3 move = XMFLOAT3(0, 0, 0);
-	const float SPEED = 0.05f;
-	pState = PLAYER_IDLE;
-
-	float prevAngleY = transform_.rotate_.y;
-
-	if (Input::IsKey(DIK_A))
-	{
-		move.x = -1;
-		pState = PLAYER_WALK;
-	}
-	if (Input::IsKey(DIK_D))
-	{
-		move.x = 1;
-		pState = PLAYER_WALK;
-	}
-	if (Input::IsKeyDown(DIK_SPACE))
-	{
-		pState = PLAYER_JUMP;
-		velocityY = 0.1f;
-		return;
-	}
-
-	if (pState == PLAYER_IDLE)return;
-
-	float currentAngleY = atan2f(move.x, move.z) * 180 / XM_PI + 180;
-	if (abs(currentAngleY - prevAngleY) >= 45)
-	{
-		pState = PLAYER_TURN;
-		targetAngle = currentAngleY;
-		initAngle = prevAngleY;
-		float angle = abs(currentAngleY - prevAngleY);
-		if (angle > 180)angle = angle - 180;
-		turnFrame = angle * TURN_FRAME / 45 ;
-	}
-		
-	if (pState == PLAYER_TURN)return;
-
-	transform_.rotate_.y = currentAngleY;
-	XMVECTOR vec = XMLoadFloat3(&move);
-	vec = XMVector3Normalize(vec);
-
-	pos = XMVectorAdd(pos, vec * SPEED);
-	if (CheckMap(XMVectorAdd(pos,vec * RADIUS)))pos = XMVectorSubtract(pos, vec * SPEED);
-	XMStoreFloat3(&transform_.position_, pos);
 }
 
 void Player::Draw()
@@ -199,7 +123,7 @@ bool Player::CheckMap(const XMVECTOR& newPos)
 void Player::UpdateCameraPosition()
 {
 	XMFLOAT3 camPos = transform_.position_;
-	//XÇÃÉNÉâÉìÉv
+	//X„ÅÆ„ÇØ„É©„É≥„Éó
 	if (camPos.x < CAM_MIN_CLANP)camPos.x = CAM_MIN_CLANP;
 	if (camPos.x > CAM_MAX_CLANP)camPos.x = CAM_MAX_CLANP;
 
@@ -215,26 +139,131 @@ void Player::UpdateIdle()
 {
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
-		
+		StartJump();
+		return;
+	}
+
+	if (Input::IsKey(DIK_A))
+	{
+		MoveOrTurn(90.0f);
+	}
+	else if (Input::IsKey(DIK_D))
+	{
+		MoveOrTurn(270.0f);
 	}
 }
 
 void Player::UpdateWalk()
 {
+	if (Input::IsKeyDown(DIK_SPACE))
+	{
+		StartJump();
+		return;
+	}
+
+	float moveX = 0.0f;
+	if (Input::IsKey(DIK_A))moveX = -1.0f;
+	if (Input::IsKey(DIK_D))moveX = 1.0f;
+
+	if (moveX == 0.0f)
+	{
+		pState = PLAYER_IDLE;
+		return;
+	}
+
+	float nextAngle = (moveX < 0.0f) ? 90.0f : 270.0f;
+	if (abs(nextAngle - transform_.rotate_.y) >= 90.0f)
+	{
+		StartTurn(nextAngle);
+		return;
+	}
+
+	Move(moveX);
 }
 
 void Player::UpdateJump()
 {
+	transform_.position_.y += velocityY;
+	velocityY -= 0.005f;
+
+	float moveX = 0.0f;
+	if (Input::IsKey(DIK_A))moveX = -1.0f;
+	if (Input::IsKey(DIK_D))moveX = 1.0f;
+
+	if (moveX != 0.0f)
+	{
+		transform_.rotate_.y = (moveX < 0.0f) ? 90.0f : 270.0f;
+		Move(moveX);
+	}
+
+	if (transform_.position_.y <= 2.0f)
+	{
+		transform_.position_.y = 2.0f;
+		pState = PLAYER_WALK;
+	}
 }
 
 void Player::UpdateTurn()
 {
+	static int frame = 0;
+	frame++;
+
+	float t = frame / turnFrame * 1.0f;
+	float angle = targetAngle - initAngle;
+
+	if (angle > 180.0f)angle -= 360.0f;
+	else if (angle < -180.0f)angle += 360.0f;
+
+	transform_.rotate_.y = initAngle + angle * t;
+
+	if (frame >= turnFrame)
+	{
+		transform_.rotate_.y = targetAngle;
+		pState = PLAYER_WALK;
+		frame = 0;
+	}
 }
 
 void Player::MoveOrTurn(float deg)
 {
+	if (abs(deg - transform_.rotate_.y) >= 90.0f)
+	{
+		StartTurn(deg);
+	}
+	else
+	{
+		pState = PLAYER_WALK;
+	}
 }
 
 void Player::StartJump()
 {
+	pState = PLAYER_JUMP;
+	velocityY = 0.1f;
+}
+
+void Player::StartTurn(float targetDeg)
+{
+	pState = PLAYER_TURN;
+	targetAngle = targetDeg;
+	initAngle = transform_.rotate_.y;
+
+	float angle = abs(targetAngle - initAngle);
+	if (angle > 180.0f)angle -= 180.0f;
+
+	turnFrame = angle * TURN_FRAME / 45.0f;
+}
+
+void Player::Move(float dirX)
+{
+	XMVECTOR pos = XMLoadFloat3(&transform_.position_);
+	XMVECTOR vec = XMVectorSet(dirX, 0, 0, 0);
+	vec = XMVector3Normalize(vec);
+
+	pos = XMVectorAdd(pos, vec * SPEED);
+	if (CheckMap(XMVectorAdd(pos, vec * RADIUS)))
+	{
+		pos = XMVectorSubtract(pos, vec * SPEED);
+	}
+	XMStoreFloat3(&transform_.position_, pos);
 }
