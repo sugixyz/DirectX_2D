@@ -33,5 +33,13 @@ private:
 private:
 	bool CheckMap(const XMVECTOR& newPos);
 	void UpdateCameraPosition();
+
+	void UpdateIdle();
+	void UpdateWalk();
+	void UpdateJump();
+	void UpdateTurn();
+
+	void MoveOrTurn(float deg);
+	void StartJump();
 };
 

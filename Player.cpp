@@ -4,7 +4,6 @@
 #include "TestScene.h"
 #include"Engine/Input.h"
 #include"Ground.h"
-#include"Engine/Debug.h"
 #include"Engine/Collider.h"
 #include"Engine/Camera.h"
 
@@ -18,6 +17,7 @@ namespace
 		PLAYER_JUMP,
 		STATE_MAX
 	};
+
 	PlayerState pState = PLAYER_IDLE;
 
 	//ラープの目標値
@@ -58,6 +58,22 @@ void Player::Initialize()
 void Player::Update()
 {
 	UpdateCameraPosition();
+
+	switch (pState)
+	{
+	case PLAYER_IDLE:
+		UpdateIdle();
+		break;
+	case PLAYER_WALK:
+		UpdateWalk();
+		break;
+	case PLAYER_JUMP:
+		UpdateJump();
+		break;
+	case PLAYER_TURN:
+		UpdateTurn();
+		break;
+	}
 
 	if (pState == PLAYER_JUMP)
 	{
@@ -126,7 +142,7 @@ void Player::Update()
 		if (angle > 180)angle = angle - 180;
 		turnFrame = angle * TURN_FRAME / 45 ;
 	}
-
+		
 	if (pState == PLAYER_TURN)return;
 
 	transform_.rotate_.y = currentAngleY;
@@ -193,4 +209,32 @@ void Player::UpdateCameraPosition()
 	camPos.y -= 0.5f;
 	camPos.z = -5;
 	Camera::SetTarget(camPos);
+}
+
+void Player::UpdateIdle()
+{
+	if (Input::IsKeyDown(DIK_SPACE))
+	{
+		
+	}
+}
+
+void Player::UpdateWalk()
+{
+}
+
+void Player::UpdateJump()
+{
+}
+
+void Player::UpdateTurn()
+{
+}
+
+void Player::MoveOrTurn(float deg)
+{
+}
+
+void Player::StartJump()
+{
 }
