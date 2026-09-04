@@ -22,6 +22,7 @@ public:
 	std::vector<std::vector<int>>& GetMapData() { return map; }
 private:
 	int hBlock;
+	int hBack;
 	std::vector<std::vector<int>> map;
 	int mapWidth;
 	int mapHeight;

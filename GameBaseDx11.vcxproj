@@ -195,7 +195,9 @@
     <ClInclude Include="Engine\Texture.h" />
     <ClInclude Include="Ground.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="ResultScene.h" />
     <ClInclude Include="TestScene.h" />
+    <ClInclude Include="TitleScene.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shader\BillBoard.hlsl">

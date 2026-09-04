@@ -12,7 +12,7 @@ namespace
 }
 
 Ground::Ground(GameObject* parent)
-	:GameObject(parent), hBlock(-1), mapHeight(-1), mapWidth(-1)
+	:GameObject(parent), hBlock(-1),hBack(-1), mapHeight(-1), mapWidth(-1)
 {
 	CsvReader csv;
 	csv.Load("map.csv");
@@ -43,6 +43,7 @@ Ground::Ground(GameObject* parent)
 void Ground::Initialize()
 {
 	hBlock = Model::Load("Block_Green.fbx");
+	hBack = Model::Load("BackGround.fbx");
 }
 
 void Ground::Update()
@@ -51,6 +52,9 @@ void Ground::Update()
 
 void Ground::Draw()
 {
+	Model::SetTransform(hBack, transform_);
+	Model::Draw(hBack);
+
 	Transform bt;
 	for (int y = 0;y < mapHeight;y++)
 	{

@@ -29,10 +29,10 @@ namespace
 	const float TURN_FRAME = 5.0f;
 
 	const float RADIUS = 0.75f;
-	const float SPEED = 0.05f;
+	const float SPEED = 0.1f;
 
 	const float CAM_MIN_CLANP = 7 * 2.0f;
-	const float CAM_MAX_CLANP = 53 * 2.0f;
+	const float CAM_MAX_CLANP = 23 * 2.0f;
 
 	std::vector < std::vector<int>> gMap;
 }
@@ -110,7 +110,7 @@ bool Player::CheckMap(const XMVECTOR& newPos)
 	int x, y;
 	x = nPos.x / 2;
 	y = -nPos.y + 20;
-	if (x < 0 || 60< x)return false;
+	if (x < 0 || 30< x)return false;
 	if (y < 0 || 20 < y)return false;
 	//char str[50];
 	//sprintf_s(str, sizeof(str), "( %d , %d )", x, z);
