@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #pragma once
 #include "Engine/GameObject.h"
 
@@ -20,6 +20,5 @@ public:
 	//開放
 	void Release() override;
 private:
-	Text* text;
-	//int hImage;
+	int hImage;
 };

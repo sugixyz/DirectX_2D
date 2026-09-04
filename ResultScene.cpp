@@ -1,17 +1,18 @@
-#include "ResultScene.h"
+﻿#include "ResultScene.h"
 #include"Engine/Text.h"
+#include"Engine/Image.h"
 #include"Engine/Input.h"
 #include"Engine/SceneManager.h"
 
 ResultScene::ResultScene(GameObject* parent)
-	:GameObject(parent, "ResultScene")
+	:GameObject(parent, "ResultScene"),hImage(-1)
 {
 }
 
 void ResultScene::Initialize()
 {
-	text = new Text();
-	text->Initialize();
+	hImage = Image::Load("clear.png");
+	assert(hImage >= 0);
 }
 
 void ResultScene::Update()
@@ -25,10 +26,10 @@ void ResultScene::Update()
 
 void ResultScene::Draw()
 {
-	text->Draw(40, 40, "TITLE_PUSH_SPACE");
+	Image::SetTransform(hImage,transform_);
+	Image::Draw(hImage);
 }
 
 void ResultScene::Release()
 {
-	//text->Release();
 }
