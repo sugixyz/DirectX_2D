@@ -29,8 +29,16 @@ namespace
 	//45度回転するのにかかるフレーム
 	const float TURN_FRAME = 5.0f;
 
+	//当たり判定の半径
 	const float RADIUS = 0.75f;
+	//１フレーム間の速度
 	const float SPEED = 0.1f;
+	//X軸の減速率
+	const float DECELERATION_RATE = 0.85f;
+	//ジャンプの初速
+	const float JUMP_INITIAL_SPEED = 0.1f;
+	//重力（１フレーム毎の減速速度）
+	const  float GRAVITY = -0.005;
 
 	const float CAM_MIN_CLANP = 7 * 2.0f;
 	const float CAM_MAX_CLANP = 23 * 2.0f;
@@ -39,7 +47,7 @@ namespace
 }
 
 Player::Player(GameObject* parent)
-	:GameObject(parent,"Player"), hWalkModel(-1), hIdleModel(-1),velocityY(0.0f)
+	:GameObject(parent,"Player"), hWalkModel(-1), hIdleModel(-1),ground(nullptr),velocity(0.0f,0.0f,0.0f)
 {
 }
 
@@ -147,10 +155,12 @@ void Player::UpdateIdle()
 
 	if (Input::IsKey(DIK_A))
 	{
+		velocity.x = -SPEED;
 		MoveOrTurn(90.0f);
 	}
 	else if (Input::IsKey(DIK_D))
 	{
+		velocity.x = SPEED;
 		MoveOrTurn(270.0f);
 	}
 }
@@ -163,39 +173,35 @@ void Player::UpdateWalk()
 		return;
 	}
 
-	float moveX = 0.0f;
-	if (Input::IsKey(DIK_A))moveX = -1.0f;
-	if (Input::IsKey(DIK_D))moveX = 1.0f;
+	if (Input::IsKey(DIK_A))velocity.x = -SPEED;
+	else if (Input::IsKey(DIK_D))velocity.x = SPEED;
+	else velocity.x *= DECELERATION_RATE;
 
-	if (moveX == 0.0f)
+	if (abs(velocity.x) <= 0.001f)
 	{
+		velocity.x = 0.0f;
 		pState = PLAYER_IDLE;
 		return;
 	}
 
-	float nextAngle = (moveX < 0.0f) ? 90.0f : 270.0f;
+	float nextAngle = (velocity.x < 0.0f) ? 90.0f : 270.0f;
 	if (abs(nextAngle - transform_.rotate_.y) >= 90.0f)
 	{
 		StartTurn(nextAngle);
 		return;
 	}
 
-	Move(moveX);
+	Move();
 }
 
 void Player::UpdateJump()
 {
-	transform_.position_.y += velocityY;
-	velocityY -= 0.005f;
+	transform_.position_.y += velocity.y;
+	velocity.y += GRAVITY;
 
-	float moveX = 0.0f;
-	if (Input::IsKey(DIK_A))moveX = -1.0f;
-	if (Input::IsKey(DIK_D))moveX = 1.0f;
-
-	if (moveX != 0.0f)
+	if (velocity.x != 0.0f)
 	{
-		transform_.rotate_.y = (moveX < 0.0f) ? 90.0f : 270.0f;
-		Move(moveX);
+		Move();
 	}
 
 	if (transform_.position_.y <= 2.0f)
@@ -241,7 +247,7 @@ void Player::MoveOrTurn(float deg)
 void Player::StartJump()
 {
 	pState = PLAYER_JUMP;
-	velocityY = 0.1f;
+	velocity.y = JUMP_INITIAL_SPEED;
 }
 
 void Player::StartTurn(float targetDeg)
@@ -256,16 +262,16 @@ void Player::StartTurn(float targetDeg)
 	turnFrame = angle * TURN_FRAME / 45.0f;
 }
 
-void Player::Move(float dirX)
+void Player::Move()
 {
 	XMVECTOR pos = XMLoadFloat3(&transform_.position_);
-	XMVECTOR vec = XMVectorSet(dirX, 0, 0, 0);
-	vec = XMVector3Normalize(vec);
+	XMVECTOR vel = XMVectorSet(velocity.x, 0, 0, 0);
+	XMVECTOR vec = XMVector3Normalize(vel);
 
-	pos = XMVectorAdd(pos, vec * SPEED);
+	pos = XMVectorAdd(pos, vel);
 	if (CheckMap(XMVectorAdd(pos, vec * RADIUS)))
 	{
-		pos = XMVectorSubtract(pos, vec * SPEED);
+		pos = XMVectorSubtract(pos, vel);
 	}
 	XMStoreFloat3(&transform_.position_, pos);
 }

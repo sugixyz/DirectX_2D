@@ -29,7 +29,7 @@ private:
 	//地面のポインタ
 	Ground* ground;
 
-	float velocityY;
+	XMFLOAT3 velocity;
 private:
 	bool CheckMap(const XMVECTOR& newPos);
 	void UpdateCameraPosition();
@@ -42,7 +42,7 @@ private:
 	void MoveOrTurn(float deg);
 	void StartJump();
 	void StartTurn(float targetDeg);
-	void Move(float dirX);
+	void Move();
 
 	void CheckGoal();
 };
