@@ -6,6 +6,7 @@
 #include"Ground.h"
 #include"Engine/Collider.h"
 #include"Engine/Camera.h"
+#include"Engine/SceneManager.h"
 
 namespace
 {
@@ -76,6 +77,7 @@ void Player::Update()
 		break;
 	}
 
+	CheckGoal();
 }
 
 void Player::Draw()
@@ -266,4 +268,13 @@ void Player::Move(float dirX)
 		pos = XMVectorSubtract(pos, vec * SPEED);
 	}
 	XMStoreFloat3(&transform_.position_, pos);
+}
+
+void Player::CheckGoal()
+{
+	if (transform_.position_.x >= 57)
+	{
+		SceneManager* sceneManagere = dynamic_cast<SceneManager*>(FindObject("SceneManager"));
+		sceneManagere->ChangeScene(SCENE_ID_RESULT);
+	}
 }

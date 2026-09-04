@@ -43,5 +43,7 @@ private:
 	void StartJump();
 	void StartTurn(float targetDeg);
 	void Move(float dirX);
+
+	void CheckGoal();
 };
 

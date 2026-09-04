@@ -1,6 +1,5 @@
 #pragma once
 #include "Engine/GameObject.h"
-#include "Engine/Model.h"
 
 class Text;
 
@@ -19,8 +18,4 @@ public:
 	void Draw() override;
 	//ŠJ•ú
 	void Release() override;
-	void AddScore(int score) { myScore += score; }
-private:
-	Text* pText;
-	int myScore;
 };
