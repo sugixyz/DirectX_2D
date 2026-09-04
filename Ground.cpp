@@ -58,7 +58,7 @@ void Ground::Draw()
 		{
 			if(map[y][x] == 1)
 			{
-				bt.position_.x = x * 2;
+				bt.position_.x = x * 2 + 1;
 				bt.position_.y = -(y - mapHeight);
 				Model::SetTransform(hBlock, bt);
 				Model::Draw(hBlock);

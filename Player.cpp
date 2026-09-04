@@ -32,7 +32,7 @@ namespace
 	const float SPEED = 0.05f;
 
 	const float CAM_MIN_CLANP = 7 * 2.0f;
-	const float CAM_MAX_CLANP = 58 * 2.0f;
+	const float CAM_MAX_CLANP = 53 * 2.0f;
 
 	std::vector < std::vector<int>> gMap;
 }
@@ -108,9 +108,9 @@ bool Player::CheckMap(const XMVECTOR& newPos)
 	XMFLOAT3 nPos;
 	XMStoreFloat3(&nPos, newPos);
 	int x, y;
-	x = nPos.x;
+	x = nPos.x / 2;
 	y = -nPos.y + 20;
-	if (x < 0 || 120< x)return false;
+	if (x < 0 || 60< x)return false;
 	if (y < 0 || 20 < y)return false;
 	//char str[50];
 	//sprintf_s(str, sizeof(str), "( %d , %d )", x, z);
@@ -127,10 +127,10 @@ void Player::UpdateCameraPosition()
 	if (camPos.x < CAM_MIN_CLANP)camPos.x = CAM_MIN_CLANP;
 	if (camPos.x > CAM_MAX_CLANP)camPos.x = CAM_MAX_CLANP;
 
-	camPos.y += 7.5;
-	camPos.z -= 20;
+	camPos.y = 9.5;
+	camPos.z = -20;
 	Camera::SetPosition(camPos);
-	camPos.y -= 0.5f;
+	camPos.y = 9.0f;
 	camPos.z = -5;
 	Camera::SetTarget(camPos);
 }
