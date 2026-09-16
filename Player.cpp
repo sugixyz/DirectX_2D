@@ -1,7 +1,5 @@
 ﻿#include "Player.h"
 #include "Engine/Model.h"
-#include "Engine/Debug.h"
-#include "TestScene.h"
 #include"Engine/Input.h"
 #include"Ground.h"
 #include"Engine/Collider.h"
@@ -36,7 +34,7 @@ namespace
 	//X軸の減速率
 	const float DECELERATION_RATE = 0.85f;
 	//ジャンプの初速
-	const float JUMP_INITIAL_SPEED = 0.1f;
+	const float JUMP_INITIAL_SPEED = 0.19f;
 	//重力（１フレーム毎の減速速度）
 	const  float GRAVITY = -0.005;
 
@@ -59,8 +57,8 @@ void Player::Initialize()
 	hWalkModel = Model::Load("Walking.fbx");
 	Model::SetAnimFrame(hWalkModel, 0, 57, 1.0);
 
-	SphereCollider* col = new SphereCollider(XMFLOAT3(0, 0, 0), 0.75f);
-	AddCollider(col);
+	BoxCollider* bCol = new BoxCollider(XMFLOAT3(0.0f, 1.8f, 0.0f), XMFLOAT3(1.5f, 3.6f, 1.5f));
+	AddCollider(bCol);
 
 	transform_.rotate_.y = 270;
 }
@@ -111,23 +109,19 @@ void Player::OnCollision(GameObject* pTarget)
 {
 }
 
-bool Player::CheckMap(const XMVECTOR& newPos)
+bool Player::IsWall(float x, float y)
 {
 	gMap = ground->GetMapData();
 
-	XMFLOAT3 nPos;
-	XMStoreFloat3(&nPos, newPos);
-	int x, y;
-	x = nPos.x / 2;
-	y = -nPos.y + 20;
-	if (x < 0 || 30< x)return false;
-	if (y < 0 || 20 < y)return false;
-	//char str[50];
-	//sprintf_s(str, sizeof(str), "( %d , %d )", x, z);
-	//Debug::Log(str);
+	int mapX, mapY;
+	mapX = (x - 1.0f) / 2.0f + 0.5f;
+	mapY = 20 - y;
 
-	return gMap[y][x] == 1;
+	//マップ範囲外は壁として判定
+	if (mapX < 0 || 30 <= mapX)return true;
+	if (mapY < 0 || 20 <= mapY)return true;
 
+	return gMap[mapY][mapX] == 1;
 }
 
 void Player::UpdateCameraPosition()
@@ -137,10 +131,10 @@ void Player::UpdateCameraPosition()
 	if (camPos.x < CAM_MIN_CLANP)camPos.x = CAM_MIN_CLANP;
 	if (camPos.x > CAM_MAX_CLANP)camPos.x = CAM_MAX_CLANP;
 
-	camPos.y = 9.5;
+	camPos.y = 8.5;
 	camPos.z = -20;
 	Camera::SetPosition(camPos);
-	camPos.y = 9.0f;
+	camPos.y = 8.0f;
 	camPos.z = -5;
 	Camera::SetTarget(camPos);
 }
@@ -150,7 +144,6 @@ void Player::UpdateIdle()
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
 		StartJump();
-		return;
 	}
 
 	if (Input::IsKey(DIK_A))
@@ -163,6 +156,13 @@ void Player::UpdateIdle()
 		velocity.x = SPEED;
 		MoveOrTurn(270.0f);
 	}
+	else
+	{
+		velocity.x = 0.0f;
+	}
+
+	MoveX();
+	MoveY();
 }
 
 void Player::UpdateWalk()
@@ -170,7 +170,6 @@ void Player::UpdateWalk()
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
 		StartJump();
-		return;
 	}
 
 	if (Input::IsKey(DIK_A))velocity.x = -SPEED;
@@ -181,34 +180,29 @@ void Player::UpdateWalk()
 	{
 		velocity.x = 0.0f;
 		pState = PLAYER_IDLE;
-		return;
 	}
 
-	float nextAngle = (velocity.x < 0.0f) ? 90.0f : 270.0f;
-	if (abs(nextAngle - transform_.rotate_.y) >= 90.0f)
+	if (velocity.x != 0.0f)
 	{
-		StartTurn(nextAngle);
-		return;
+		float nextAngle = (velocity.x < 0.0f) ? 90.0f : 270.0f;
+		if (abs(nextAngle - transform_.rotate_.y) >= 90.0f)
+		{
+			StartTurn(nextAngle);
+			return;
+		}
 	}
 
-	Move();
+	MoveX();
+	MoveY();
 }
 
 void Player::UpdateJump()
 {
-	transform_.position_.y += velocity.y;
-	velocity.y += GRAVITY;
+	velocity.x *= 0.995f;
+	if (abs(velocity.x) <= 0.001f)velocity.x = 0.0f;
 
-	if (velocity.x != 0.0f)
-	{
-		Move();
-	}
-
-	if (transform_.position_.y <= 2.0f)
-	{
-		transform_.position_.y = 2.0f;
-		pState = PLAYER_WALK;
-	}
+	MoveX();
+	MoveY();
 }
 
 void Player::UpdateTurn()
@@ -262,18 +256,81 @@ void Player::StartTurn(float targetDeg)
 	turnFrame = angle * TURN_FRAME / 45.0f;
 }
 
-void Player::Move()
+void Player::MoveX()
 {
-	XMVECTOR pos = XMLoadFloat3(&transform_.position_);
-	XMVECTOR vel = XMVectorSet(velocity.x, 0, 0, 0);
-	XMVECTOR vec = XMVector3Normalize(vel);
+	transform_.position_.x += velocity.x;
 
-	pos = XMVectorAdd(pos, vel);
-	if (CheckMap(XMVectorAdd(pos, vec * RADIUS)))
+	//プレイヤーの左右の端
+	float left = transform_.position_.x - RADIUS;
+	float right = transform_.position_.x + RADIUS;
+	float bottom = transform_.position_.y + 0.1f;
+	float top = transform_.position_.y + 3.6f - 0.1f;
+
+	if (velocity.x > 0.0f)
 	{
-		pos = XMVectorSubtract(pos, vel);
+		if (IsWall(right, bottom) || IsWall(right, top))
+		{
+			int mapX = static_cast<int>(right / 2);
+			float blockLeft = mapX * 2.0f;
+			transform_.position_.x = blockLeft - RADIUS;
+			velocity.x = 0.0f;
+		}
 	}
-	XMStoreFloat3(&transform_.position_, pos);
+
+	else if (velocity.x < 0.0f)
+	{
+		if (IsWall(left, bottom) || IsWall(left, top))
+		{
+			int mapX = static_cast<int>(left / 2);
+			float blockRight = (mapX + 1) * 2.0f;
+			transform_.position_.x = blockRight + RADIUS;
+			velocity.x = 0.0f;
+		}
+	}
+}
+
+void Player::MoveY()
+{
+	velocity.y += GRAVITY;
+	transform_.position_.y += velocity.y;
+
+	float left = transform_.position_.x - RADIUS + 0.1f;
+	float right = transform_.position_.x + RADIUS - 0.1f;
+	float bottom = transform_.position_.y;
+	float top = transform_.position_.y + 3.6f;
+
+	if (velocity.y <= 0.0f)
+	{
+		if (IsWall(left, bottom - 0.1f) || IsWall(right, bottom - 0.1f))
+		{
+			int mapY = static_cast<int>(20.0f - bottom + 0.1f);
+			float blockTop = 20.0f - mapY;
+			transform_.position_.y = blockTop;
+			velocity.y = 0.0f;
+
+			if (pState == PLAYER_JUMP)
+			{
+				pState = (velocity.x != 0.0f) ? PLAYER_WALK : PLAYER_IDLE;
+			}
+		}
+		else
+		{
+			if (pState != PLAYER_JUMP)
+			{
+				pState = PLAYER_JUMP;
+			}
+		}
+	}
+	else if (velocity.y > 0.0f)
+	{
+		if (IsWall(left, top) || IsWall(right, top))
+		{
+			int mapY = static_cast<int>(-top + 20);
+			float blockBottom = (20.0f - mapY);
+			transform_.position_.y = blockBottom - 3.6f;
+			velocity.y = 0.0f;
+		}
+	}
 }
 
 void Player::CheckGoal()

@@ -1,4 +1,4 @@
-#include "Ground.h"
+﻿#include "Ground.h"
 #include"Engine/Model.h"
 #include"Player.h"
 #include"Engine/Text.h"
@@ -63,7 +63,7 @@ void Ground::Draw()
 			if(map[y][x] == 1)
 			{
 				bt.position_.x = x * 2 + 1;
-				bt.position_.y = -(y - mapHeight);
+				bt.position_.y = -(y - mapHeight) - 1;
 				Model::SetTransform(hBlock, bt);
 				Model::Draw(hBlock);
 			}
@@ -78,9 +78,7 @@ void Ground::Release()
 XMFLOAT3 Ground::CalculatePosition(int x, int y)
 {
 	XMFLOAT3 pos;
-	//pos.x = (x - 5.0f) * 2 + 1;
 	pos.x = x * 2;
-	//pos.y = 0.0f;
 	pos.y = -(y - mapHeight);
 	pos.z = 0.0f;
 

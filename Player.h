@@ -31,7 +31,7 @@ private:
 
 	XMFLOAT3 velocity;
 private:
-	bool CheckMap(const XMVECTOR& newPos);
+	bool IsWall(float x,float y);
 	void UpdateCameraPosition();
 
 	void UpdateIdle();
@@ -42,7 +42,9 @@ private:
 	void MoveOrTurn(float deg);
 	void StartJump();
 	void StartTurn(float targetDeg);
-	void Move();
+
+	void MoveX();
+	void MoveY();
 
 	void CheckGoal();
 };
