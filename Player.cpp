@@ -42,6 +42,8 @@ namespace
 	const float CAM_MAX_CLANP = 23 * 2.0f;
 
 	std::vector < std::vector<int>> gMap;
+
+	const XMFLOAT3 COL_SIZE = { 1.5f,3.6f,1.5f };
 }
 
 Player::Player(GameObject* parent)
@@ -57,7 +59,7 @@ void Player::Initialize()
 	hWalkModel = Model::Load("Walking.fbx");
 	Model::SetAnimFrame(hWalkModel, 0, 57, 1.0);
 
-	BoxCollider* bCol = new BoxCollider(XMFLOAT3(0.0f, 1.8f, 0.0f), XMFLOAT3(1.5f, 3.6f, 1.5f));
+	BoxCollider* bCol = new BoxCollider(XMFLOAT3(0.0f, 1.8f, 0.0f), COL_SIZE);
 	AddCollider(bCol);
 
 	transform_.rotate_.y = 270;
@@ -107,6 +109,32 @@ void Player::Release()
 
 void Player::OnCollision(GameObject* pTarget)
 {
+}
+
+XMFLOAT3 Player::GetColSize()
+{
+	return COL_SIZE;
+}
+
+void Player::OnGround()
+{
+	velocity.y = 0.0f;
+
+	if (pState == PLAYER_JUMP)
+	{
+		pState = (velocity.x != 0.0f) ? PLAYER_WALK : PLAYER_IDLE;
+	}
+}
+
+void Player::CollisionWall()
+{
+	velocity.x = 0.0f;
+}
+
+void Player::CollisionOnBlock()
+{
+	velocity.y = 0.0f;
+	pState = PLAYER_JUMP;
 }
 
 bool Player::IsWall(float x, float y)

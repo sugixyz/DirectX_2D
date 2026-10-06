@@ -1,6 +1,7 @@
 ﻿#include "Ground.h"
 #include"Engine/Model.h"
 #include"Player.h"
+#include"Block.h"
 #include"Engine/Text.h"
 #include"Engine/CsvReader.h"
 
@@ -26,15 +27,18 @@ Ground::Ground(GameObject* parent)
 		{
 			int value = csv.GetValue(x, y);
 			map[y][x] = value;
-			if (value != WALL_CSV)
-			{
-				XMFLOAT3 pos = CalculatePosition(x, y);
+			
+			XMFLOAT3 pos = CalculatePosition(x, y);
 
-				if (value == PLAYER_CSV)
-				{
-					GameObject* p = FindObject("Player");
-					p->SetPosition(pos);
-				}
+			if (value == PLAYER_CSV)
+			{
+				GameObject* p = FindObject("Player");
+				p->SetPosition(pos);
+			}
+			else if (value == WALL_CSV)
+			{
+				Block* block = Instantiate<Block>(this->GetParent());
+				block->SetPosition(pos);
 			}
 		}
 	}
@@ -64,8 +68,8 @@ void Ground::Draw()
 			{
 				bt.position_.x = x * 2 + 1;
 				bt.position_.y = -(y - mapHeight) - 1;
-				Model::SetTransform(hBlock, bt);
-				Model::Draw(hBlock);
+				//Model::SetTransform(hBlock, bt);
+				//Model::Draw(hBlock);
 			}
 		}
 	}

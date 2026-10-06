@@ -21,6 +21,11 @@ public:
 	//地面のポインタを取得
 	void SetGround(Ground* g) { ground = g; }
 	void OnCollision(GameObject* pTarget) override;
+
+	XMFLOAT3 GetColSize();
+	void OnGround();
+	void CollisionWall();
+	void CollisionOnBlock();
 private:
 	//歩きアニメーションモデル
 	int hWalkModel;
