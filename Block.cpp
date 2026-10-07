@@ -7,6 +7,8 @@ namespace
 {
 	const XMFLOAT3 COL_POS = { 0.0f,0.5f,0.0f };
 	const XMFLOAT3 COL_SIZE = { 2.0f,1.0f,2.0f };
+
+    const float DELTA_TIME = 1.0f / 60.0f;
 }
 
 Block::Block(GameObject* parent)
@@ -19,10 +21,34 @@ void Block::Initialize()
 	hModel = Model::Load("Block_Green.fbx");
 	BoxCollider* bCol = new BoxCollider(COL_POS, COL_SIZE);
 	AddCollider(bCol);
+
+    startPosition = XMLoadFloat3(&transform_.position_);
+    endPosition = startPosition;
+
+    moveTime = 1.0f;
+    timer = 0.0f;
+
+    canMoving = false;
 }
 
 void Block::Update()
 {
+    if (!canMoving)return;
+
+    //time += DELTA_TIME;
+    timer += 0.016f;
+
+    float t = timer / moveTime;
+    if (t >= 1.0f)t = 1.0f;
+
+    XMVECTOR pos = XMVectorLerp(startPosition, endPosition, t);
+    XMStoreFloat3(&transform_.position_, pos);
+
+    if (t >= 1.0f)
+    {
+        LerpReset(); 
+        timer = 0.0f;
+    }
 }
 
 void Block::Draw()
@@ -42,6 +68,7 @@ void Block::OnCollision(GameObject* pTarget)
     Player* p = dynamic_cast<Player*>(pTarget);
     if (!p) return;
 
+
     XMFLOAT3 pPos = p->GetPosition();
     XMFLOAT3 pSize = p->GetColSize();
 
@@ -52,8 +79,6 @@ void Block::OnCollision(GameObject* pTarget)
     float overlapX = (COL_SIZE.x / 2.0f + pSize.x / 2.0f) - fabsf(diffX);
 
     // Y軸（足元基準）のめり込み量を算出
-    // プレイヤーの頭（pPos.y + pSize.y）とブロックの頭（transform_.position_.y + COL_SIZE.y）の最小値から
-    // 双方の足元位置の最大値を引くことで重なりを求める
     float topMin = (pPos.y + pSize.y < transform_.position_.y + COL_SIZE.y)
         ? (pPos.y + pSize.y)
         : (transform_.position_.y + COL_SIZE.y);
@@ -107,12 +132,19 @@ void Block::OnCollision(GameObject* pTarget)
     }
 }
 
-Direction Block::CalculateDirection(XMFLOAT3 pos,XMFLOAT3 size)
+void Block::ConvertToMovingBlock(XMFLOAT3 move,float time)
 {
-	if (pos.y >= transform_.position_.y + COL_SIZE.y)return Direction::TOP;
-	else if (pos.y + size.y < transform_.position_.y)return Direction::BOTTOM;
-	else if (pos.x < transform_.position_.x)return Direction::LEFT;
-	else return Direction::RIGHT;
+    XMVECTOR moveVec = XMLoadFloat3(&move);
+    startPosition = XMLoadFloat3(&transform_.position_);
+    endPosition = startPosition + moveVec;
+    moveTime = time;
+
+    canMoving = true;
 }
 
-
+void Block::LerpReset()
+{
+    XMVECTOR tmp = startPosition;
+    startPosition = endPosition;
+    endPosition = tmp;
+}

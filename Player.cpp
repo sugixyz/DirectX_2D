@@ -137,21 +137,6 @@ void Player::CollisionOnBlock()
 	pState = PLAYER_JUMP;
 }
 
-bool Player::IsWall(float x, float y)
-{
-	gMap = ground->GetMapData();
-
-	int mapX, mapY;
-	mapX = (x - 1.0f) / 2.0f + 0.5f;
-	mapY = 20 - y;
-
-	//マップ範囲外は壁として判定
-	if (mapX < 0 || 30 <= mapX)return true;
-	if (mapY < 0 || 20 <= mapY)return true;
-
-	return gMap[mapY][mapX] == 1;
-}
-
 void Player::UpdateCameraPosition()
 {
 	XMFLOAT3 camPos = transform_.position_;
@@ -198,6 +183,11 @@ void Player::UpdateWalk()
 	if (Input::IsKeyDown(DIK_SPACE))
 	{
 		StartJump();
+	}
+	else if (velocity.y < 0)
+	{
+		pState = PLAYER_JUMP;
+		return;
 	}
 
 	if (Input::IsKey(DIK_A))velocity.x = -SPEED;
@@ -287,83 +277,17 @@ void Player::StartTurn(float targetDeg)
 void Player::MoveX()
 {
 	transform_.position_.x += velocity.x;
-
-	//プレイヤーの左右の端
-	float left = transform_.position_.x - RADIUS;
-	float right = transform_.position_.x + RADIUS;
-	float bottom = transform_.position_.y + 0.1f;
-	float top = transform_.position_.y + 3.6f - 0.1f;
-
-	if (velocity.x > 0.0f)
-	{
-		if (IsWall(right, bottom) || IsWall(right, top))
-		{
-			int mapX = static_cast<int>(right / 2);
-			float blockLeft = mapX * 2.0f;
-			transform_.position_.x = blockLeft - RADIUS;
-			velocity.x = 0.0f;
-		}
-	}
-
-	else if (velocity.x < 0.0f)
-	{
-		if (IsWall(left, bottom) || IsWall(left, top))
-		{
-			int mapX = static_cast<int>(left / 2);
-			float blockRight = (mapX + 1) * 2.0f;
-			transform_.position_.x = blockRight + RADIUS;
-			velocity.x = 0.0f;
-		}
-	}
 }
 
 void Player::MoveY()
 {
 	velocity.y += GRAVITY;
 	transform_.position_.y += velocity.y;
-
-	float left = transform_.position_.x - RADIUS + 0.1f;
-	float right = transform_.position_.x + RADIUS - 0.1f;
-	float bottom = transform_.position_.y;
-	float top = transform_.position_.y + 3.6f;
-
-	if (velocity.y <= 0.0f)
-	{
-		if (IsWall(left, bottom - 0.1f) || IsWall(right, bottom - 0.1f))
-		{
-			int mapY = static_cast<int>(20.0f - bottom + 0.1f);
-			float blockTop = 20.0f - mapY;
-			transform_.position_.y = blockTop;
-			velocity.y = 0.0f;
-
-			if (pState == PLAYER_JUMP)
-			{
-				pState = (velocity.x != 0.0f) ? PLAYER_WALK : PLAYER_IDLE;
-			}
-		}
-		else
-		{
-			if (pState != PLAYER_JUMP)
-			{
-				pState = PLAYER_JUMP;
-			}
-		}
-	}
-	else if (velocity.y > 0.0f)
-	{
-		if (IsWall(left, top) || IsWall(right, top))
-		{
-			int mapY = static_cast<int>(-top + 20);
-			float blockBottom = (20.0f - mapY);
-			transform_.position_.y = blockBottom - 3.6f;
-			velocity.y = 0.0f;
-		}
-	}
 }
 
 void Player::CheckGoal()
 {
-	if (transform_.position_.x >= 57)
+	if (transform_.position_.x >= 56)
 	{
 		SceneManager* sceneManagere = dynamic_cast<SceneManager*>(FindObject("SceneManager"));
 		sceneManagere->ChangeScene(SCENE_ID_RESULT);

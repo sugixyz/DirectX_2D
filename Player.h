@@ -36,7 +36,6 @@ private:
 
 	XMFLOAT3 velocity;
 private:
-	bool IsWall(float x,float y);
 	void UpdateCameraPosition();
 
 	void UpdateIdle();

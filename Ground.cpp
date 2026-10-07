@@ -8,8 +8,9 @@
 namespace
 {
 	int WALL_CSV = 1;
-	int PLAYER_CSV = 2;
-	//int ENEMY_CSV = 3;
+	int MOVE_X_CSV = 2;
+	int MOVE_Y_CSV = 3;
+	int PLAYER_CSV = 4;
 }
 
 Ground::Ground(GameObject* parent)
@@ -35,10 +36,21 @@ Ground::Ground(GameObject* parent)
 				GameObject* p = FindObject("Player");
 				p->SetPosition(pos);
 			}
-			else if (value == WALL_CSV)
+			else if (value >= WALL_CSV)
 			{
 				Block* block = Instantiate<Block>(this->GetParent());
 				block->SetPosition(pos);
+
+				if (value == MOVE_X_CSV)
+				{
+					XMFLOAT3 direction = { 2.0f,0.0f,0.0f };
+					block->ConvertToMovingBlock(direction);
+				}
+				else if (value == MOVE_Y_CSV)
+				{
+					XMFLOAT3 direction = { 0.0f,1.0f,0.0f };
+					block->ConvertToMovingBlock(direction);
+				}
 			}
 		}
 	}

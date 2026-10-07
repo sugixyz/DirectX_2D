@@ -7,9 +7,6 @@
 #include "BoxCollider.h"
 #include "Transform.h"
 
-
-
-
 using namespace DirectX;
 
 
@@ -82,6 +79,8 @@ public:
 	//親オブジェクトを取得
 	//戻値：親オブジェクトのアドレス
 	GameObject* GetParent();
+
+	void SetParent(GameObject* parent);
 
 	//名前でオブジェクトを検索（対象は自分の子供以下）
 	//引数：name	検索する名前
