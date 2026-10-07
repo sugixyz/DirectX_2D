@@ -43,13 +43,13 @@ Ground::Ground(GameObject* parent)
 
 				if (value == MOVE_X_CSV)
 				{
-					XMFLOAT3 direction = { 2.0f,0.0f,0.0f };
-					block->ConvertToMovingBlock(direction);
+					XMFLOAT3 direction = { 4.0f,0.0f,0.0f };
+					block->ConvertToMovingBlock(direction,2.0f);
 				}
 				else if (value == MOVE_Y_CSV)
 				{
-					XMFLOAT3 direction = { 0.0f,1.0f,0.0f };
-					block->ConvertToMovingBlock(direction);
+					XMFLOAT3 direction = { 0.0f,2.0f,0.0f };
+					block->ConvertToMovingBlock(direction,2.0f);
 				}
 			}
 		}
